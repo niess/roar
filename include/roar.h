@@ -109,7 +109,7 @@ struct roar_handler {
  * @param  message  the message to log.
  * @return          the error code, for convenience.
  */
-#define ROAR_ERROR_MESSAGE(HANDLER, referent, code, message)                   \
+#define ROAR_ERROR_MESSAGE(handler, referent, code, message)                   \
         roar_handler_raise(handler, __func__, __FILE__, __LINE__,              \
             (roar_function_t *)referent, code, 0, message, NULL);
 
