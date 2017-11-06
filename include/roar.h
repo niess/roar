@@ -86,7 +86,8 @@ struct roar_handler {
  */
 #define ROAR_ERROR_FORMAT(handler, referent, code, format, ...)                \
         roar_handler_raise(handler, __func__, __FILE__, __LINE__,              \
-            (roar_function_t *)referent, code, 0, format, NULL, ##__VA_ARGS__);
+            (roar_function_t *)referent, code, 0, format, NULL,                \
+            ##__VA_ARGS__);
 
 /**
 * Raise an error with a formated body message from a variadic list.
@@ -179,7 +180,8 @@ struct roar_handler {
  */
 #define ROAR_ERRNO_FORMAT(handler, referent, code, format, ...)                \
         roar_handler_raise(handler, __func__, __FILE__, __LINE__,              \
-            (roar_function_t *)referent, code, 1, NULL, format, ##__VA_ARGS__);
+            (roar_function_t *)referent, code, 1, NULL, format,                \
+            ##__VA_ARGS__);
 
 /**
  * Raise an error with an errno body message and a formated body parameter from
@@ -259,8 +261,7 @@ void handler_vprint(struct roar_handler * h, const char * function,
 {
         if (h->stream != NULL) {
                 /* Dump the error message to the stream. */
-                fprintf(
-                    h->stream, ROAR_FORMAT_HEADER, function, file, line);
+                fprintf(h->stream, ROAR_FORMAT_HEADER, function, file, line);
                 if (use_errno) {
                         fprintf(h->stream, "%s", strerror(code));
                 } else if (parameter != NULL) {
@@ -282,25 +283,34 @@ void handler_vprint(struct roar_handler * h, const char * function,
                 /* Dump the error message to the buffer. */
                 int n = snprintf(h->string, ROAR_STRING_SIZE,
                     ROAR_FORMAT_HEADER, function, file, line);
+                if (n >= ROAR_STRING_SIZE) goto end;
                 if (use_errno) {
-                        n += snprintf(h->string + n, ROAR_STRING_SIZE - n,
-                            "%s", strerror(code));
+                        n += snprintf(h->string + n, ROAR_STRING_SIZE - n, "%s",
+                            strerror(code));
+                        if (n >= ROAR_STRING_SIZE) goto end;
                 } else if (parameter != NULL) {
-                        n += snprintf(h->string + n,
-                            ROAR_STRING_SIZE - n, "%s", message);
+                        n += snprintf(
+                            h->string + n, ROAR_STRING_SIZE - n, "%s", message);
+                        if (n >= ROAR_STRING_SIZE) goto end;
                 } else {
-                        n += vsnprintf(h->string + n,
-                            ROAR_STRING_SIZE - n, message, args);
+                        n += vsnprintf(
+                            h->string + n, ROAR_STRING_SIZE - n, message, args);
+                        if (n >= ROAR_STRING_SIZE) goto end;
                 }
 
                 if (parameter != NULL) {
-                        n += snprintf(h->string + n,
-                            ROAR_STRING_SIZE - n, ROAR_FORMAT_BRA);
-                        n += vsnprintf(h->string + n,
-                            ROAR_STRING_SIZE - n, parameter, args);
-                        n += snprintf(h->string + n,
-                            ROAR_STRING_SIZE - n, ROAR_FORMAT_CKET);
+                        n += snprintf(h->string + n, ROAR_STRING_SIZE - n,
+                            ROAR_FORMAT_BRA);
+                        if (n >= ROAR_STRING_SIZE) goto end;
+                        n += vsnprintf(h->string + n, ROAR_STRING_SIZE - n,
+                            parameter, args);
+                        if (n >= ROAR_STRING_SIZE) goto end;
+                        n += snprintf(h->string + n, ROAR_STRING_SIZE - n,
+                            ROAR_FORMAT_CKET);
+                        if (n >= ROAR_STRING_SIZE) goto end;
                 }
+        end:
+                h->string[ROAR_STRING_SIZE - 1] = 0x0;
         }
 }
 
@@ -316,15 +326,15 @@ void handler_vprint(struct roar_handler * h, const char * function,
         return code;
 
 /* General purpose functions for raising an error. */
-int roar_handler_raise(void * handler, const char * function,
-    const char * file, int line, roar_function_t * referent, int code,
-    int use_errno, const char * message, const char * parameter, ...)
+int roar_handler_raise(void * handler, const char * function, const char * file,
+    int line, roar_function_t * referent, int code, int use_errno,
+    const char * message, const char * parameter, ...)
 {
         ROAR_RAISE_PREPROCESS
         va_list args;
         va_start(args, parameter);
-        handler_vprint(handler, function, file, line, referent, code,
-            use_errno, message, parameter, args);
+        handler_vprint(handler, function, file, line, referent, code, use_errno,
+            message, parameter, args);
         va_end(args);
         ROAR_RAISE_POSTPROCESS
 }
@@ -334,8 +344,8 @@ int roar_handler_vraise(void * handler, const char * function,
     int use_errno, const char * message, const char * parameter, va_list args)
 {
         ROAR_RAISE_PREPROCESS
-        handler_vprint(handler, function, file, line, referent, code,
-            use_errno, message, parameter, args);
+        handler_vprint(handler, function, file, line, referent, code, use_errno,
+            message, parameter, args);
         ROAR_RAISE_POSTPROCESS
 }
 
