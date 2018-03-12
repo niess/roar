@@ -255,7 +255,7 @@ extern
 #endif
 
 /* General purpose function for printing an error. */
-void handler_vprint(struct roar_handler * h, const char * function,
+static void handler_vprint(struct roar_handler * h, const char * function,
     const char * file, int line, roar_function_t * referent, int code,
     int use_errno, const char * message, const char * parameter, va_list args)
 {
