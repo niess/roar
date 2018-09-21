@@ -87,7 +87,7 @@ struct roar_handler {
 #define ROAR_ERROR_FORMAT(handler, referent, code, format, ...)                \
         roar_handler_raise(handler, __func__, __FILE__, __LINE__,              \
             (roar_function_t *)referent, code, 0, format, NULL,                \
-            ##__VA_ARGS__);
+            __VA_ARGS__);
 
 /**
 * Raise an error with a formated body message from a variadic list.
@@ -128,7 +128,7 @@ struct roar_handler {
 #define ROAR_ERRWP_FORMAT(handler, referent, code, message, format, ...)       \
         roar_handler_raise(handler, __func__, __FILE__, __LINE__,              \
             (roar_function_t *)referent, code, 0, message, format,             \
-            ##__VA_ARGS__);
+            __VA_ARGS__);
 
 /**
 * Raise an error message with a formated body parameter from a variadic list.
@@ -181,7 +181,7 @@ struct roar_handler {
 #define ROAR_ERRNO_FORMAT(handler, referent, code, format, ...)                \
         roar_handler_raise(handler, __func__, __FILE__, __LINE__,              \
             (roar_function_t *)referent, code, 1, NULL, format,                \
-            ##__VA_ARGS__);
+            __VA_ARGS__);
 
 /**
  * Raise an error with an errno body message and a formated body parameter from
